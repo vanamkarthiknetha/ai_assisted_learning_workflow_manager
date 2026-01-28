@@ -24,9 +24,12 @@ export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string[]>>({});
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     setIsLoading(true);
     setErrors({});
+
+    const formData = new FormData(e.currentTarget);
 
     try {
       const result: ActionResponse = await login(formData);
@@ -54,7 +57,7 @@ export function LoginForm() {
           Enter your credentials to access your account
         </CardDescription>
       </CardHeader>
-      <form action={handleSubmit}>
+      <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
@@ -89,8 +92,14 @@ export function LoginForm() {
         </CardContent>
         <CardFooter className="flex flex-col space-y-4 mt-4">
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Sign In
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Signing in...
+              </>
+            ) : (
+              "Sign In"
+            )}
           </Button>
           <p className="text-sm text-muted-foreground text-center">
             Don&apos;t have an account?{" "}

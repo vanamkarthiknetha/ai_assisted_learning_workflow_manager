@@ -24,9 +24,12 @@ export function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string[]>>({});
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     setIsLoading(true);
     setErrors({});
+
+    const formData = new FormData(e.currentTarget);
 
     try {
       const result: ActionResponse = await register(formData);
@@ -55,7 +58,7 @@ export function RegisterForm() {
           Enter your details to get started with your learning journey
         </CardDescription>
       </CardHeader>
-      <form action={handleSubmit}>
+      <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
@@ -122,8 +125,14 @@ export function RegisterForm() {
         </CardContent>
         <CardFooter className="flex flex-col space-y-4 mt-4">
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Create Account
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating account...
+              </>
+            ) : (
+              "Create Account"
+            )}
           </Button>
           <p className="text-sm text-muted-foreground text-center">
             Already have an account?{" "}
