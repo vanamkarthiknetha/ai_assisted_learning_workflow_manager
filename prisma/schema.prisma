@@ -1,8 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// Prisma Schema for AI-Assisted Learning Workflow Manager
+// This schema defines the data models for users, learning goals, resources, and notes
 
 generator client {
   provider = "prisma-client"
@@ -11,4 +8,89 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+// User model for authentication
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String   // Hashed password
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  goals Goal[]
+
+  @@index([email])
+}
+
+// Learning Goal model
+model Goal {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  status      GoalStatus @default(NOT_STARTED)
+  targetDate  DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Relations
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resources Resource[]
+  notes     Note[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+// Goal status enum
+enum GoalStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+// Learning Resource model
+model Resource {
+  id        String       @id @default(cuid())
+  title     String
+  type      ResourceType
+  url       String
+  completed Boolean      @default(false)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  // Relations
+  goalId String
+  goal   Goal   @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  notes  Note[]
+
+  @@index([goalId])
+  @@index([completed])
+}
+
+// Resource type enum
+enum ResourceType {
+  VIDEO
+  ARTICLE
+  COURSE
+}
+
+// Note model (can be linked to a goal or a resource)
+model Note {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations - Note can belong to either a Goal or a Resource
+  goalId     String?
+  goal       Goal?     @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  resourceId String?
+  resource   Resource? @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@index([goalId])
+  @@index([resourceId])
 }
